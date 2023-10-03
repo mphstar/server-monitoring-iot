@@ -1,13 +1,14 @@
-const express = require('express');
-const http = require('http');
+const express = require("express");
+const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
-    cors: {
-        origin: '*'
-    }
+  allowRequest: (req, callback) => {
+    const noOriginHeader = req.headers.origin === undefined;
+    callback(null, noOriginHeader);
+  },
 });
 
 // Menyajikan halaman HTML sederhana
@@ -24,13 +25,11 @@ io.on("connection", (socket) => {
     console.log("disconnected");
   });
 
-  socket.on('send_from_arduino', (data) => {
+  socket.on("send_from_arduino", (data) => {
     console.log(data);
-    io.emit('to_client', data)
-  })
-
+    io.emit("to_client", data);
+  });
 });
-
 
 const port = process.env.PORT || 4000;
 server.listen(port, () => {
